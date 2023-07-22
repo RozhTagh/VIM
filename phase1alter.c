@@ -1,11 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <malloc.h>
-#include <conio.h>
 
 int does_exist(const char * path){
     if (access(path, F_OK) == -1)
@@ -299,25 +296,7 @@ void insert(){
     fclose(filepointer2);
 }
 
-void removestr(){
-
-    char * path = get_path();
-
-    char dashpos[10];
-    scanf("%s", dashpos);
-
-    int line_num, start_pos;
-    scanf("%d:%d", &line_num, &start_pos);
-
-    char dashsize[10];
-    scanf("%s", dashsize);
-
-    int size;
-    scanf("%d", &size);
-
-    char dashdir[5];
-    scanf("%s", dashdir);
-
+void removestr(char * path, int line_num, int start_pos, int size, char * direction){
     if(does_exist(path) == 0){
         printf("file does not exist\n");
         return;
@@ -342,7 +321,7 @@ void removestr(){
 
     FILE * filepointer2 = fopen(path, "w");
 
-    if(strcmp(dashdir, "-f") == 0){
+    if(strcmp(direction, "-f") == 0){
         int n = -1, line = 1;
         for(int i = 0; ; i++){
             if(line == line_num){
@@ -390,8 +369,8 @@ void removestr(){
     printf("success\n");
 }
 
-void copystr(){
-
+void remove_args() {
+    dashfile();
     char * path = get_path();
 
     char dashpos[10];
@@ -409,6 +388,10 @@ void copystr(){
     char dashdir[5];
     scanf("%s", dashdir);
 
+    removestr(path, line_num, start_pos, size, dashdir);
+}
+
+void copystr(char * path, int line_num, int start_pos, int size, char * direction){
     if(does_exist(path) == 0){
         printf("file does not exist\n");
         return;
@@ -420,15 +403,15 @@ void copystr(){
 
     int line = 1;
     while(line != line_num){
-        char c = fgetc(filepointer1);
-        if (c == '\n')
+        int c = fgetc(filepointer1);
+        if (c == 10)
             line++;
     }
 
-    if (strcmp(dashdir, "-f") == 0){
+    if (strcmp(direction, "-f") == 0){
 
         for(int i = 0; i<start_pos; i++){
-            char pos_count = fgetc(filepointer1);
+            int pos_count = fgetc(filepointer1);
         }
 
         for (int i = 0; i<size; i++)
@@ -454,6 +437,28 @@ void copystr(){
     printf("copied\n");
     fclose(filepointer1);
     fclose(filepointer2);
+}
+
+void copy_args() {
+    dashfile();
+    char * path = get_path();
+
+    char dashpos[10];
+    scanf("%s", dashpos);
+
+    int line_num, start_pos;
+    scanf("%d:%d", &line_num, &start_pos);
+
+    char dashsize[10];
+    scanf("%s", dashsize);
+
+    int size;
+    scanf("%d", &size);
+
+    char dashdir[5];
+    scanf("%s", dashdir);
+
+    copystr(path, line_num, start_pos, size, dashdir);
 }
 
 void pastestr(){
@@ -540,8 +545,13 @@ void pastestr(){
 
 }
 
-void cutstr(){
+void cutstr(char * path, int line_num, int start_pos, int size, char * direction){
+    copystr(path, line_num, start_pos, size, direction);
+    removestr(path, line_num, start_pos, size, direction);
+}
 
+void cut_args() {
+    dashfile();
     char * path = get_path();
 
     char dashpos[10];
@@ -559,100 +569,7 @@ void cutstr(){
     char dashdir[5];
     scanf("%s", dashdir);
 
-    if(does_exist(path) == 0){
-        printf("file does not exist\n");
-        return;
-    }
-
-    undo_saver(path);
-
-    FILE * filepointer1 = fopen(path, "r");
-    FILE * filepointer2 = fopen("copy/copy.txt", "w");
-
-    int line = 1;
-    while(line != line_num){
-        char c = fgetc(filepointer1);
-        if (c == '\n')
-            line++;
-        }
-
-    if (strcmp(dashdir, "-f") == 0){
-
-        for(int i = 0; i<start_pos; i++){
-            char pos_count = fgetc(filepointer1);
-        }
-
-        for (int i = 0; i<size; i++){
-            char c = fgetc(filepointer1);
-            fputc(c, filepointer2);
-        }
-    }
-
-    else{
-
-        for(int i = 0; i<start_pos - size; i++){
-            char pos_count = fgetc(filepointer1);
-        }
-
-        for(int i = 0; i<size; i++){
-            char c = fgetc(filepointer1);
-            fputc(c, filepointer2);
-        }
-    }
-
-    fclose(filepointer1);
-    fclose(filepointer2);
-
-    char * copy2 = (char *)calloc(100000, sizeof(char));
-
-    FILE * filepointer3 = fopen(path, "r");
-
-    char character;
-
-    for(int i = 0; ; i++){
-        character = fgetc(filepointer3);
-        copy2[i] = character;
-        if(character == EOF)
-            break;
-    }
-
-    fclose(filepointer3);
-
-    FILE * filepointer4 = fopen(path, "w");
-
-    int line2 = 1, n;
-
-    for(int i = 0; line2 != line_num; i++){
-        n = i;
-        if (copy2[i] == 10)
-            line2++;
-    }
-
-    if(strcmp(dashdir, "-f") == 0){
-
-        for(int i = 0; i <= n+start_pos; i++)
-            fputc(copy2[i], filepointer4);
-
-        for(int i = 1; ; i++){
-            if (copy2[i+n+start_pos+size] == EOF)
-                break;
-            fputc(copy2[i+n+start_pos+size], filepointer4);
-        }
-    }
-
-    else{
-        for(int i = 0; i <= n+start_pos-size; i++)
-            fputc(copy2[i], filepointer4);
-
-        for(int i = 1; ; i++){
-            if(copy2[i+n+start_pos] == EOF)
-                break;
-            fputc(copy2[i+n+start_pos], filepointer4);
-        }
-    }
-
-    fclose(filepointer4);
-
+    cutstr(path, line_num, start_pos, size, dashdir);
 }
 
 int find2(char string[], char path[], int num){
@@ -1679,13 +1596,11 @@ int main(){
         }
 
         else if (strcmp(operation, "removestr") == 0){
-            char * dash_file = dashfile();
-            removestr(); //not done
+            remove_args();
         }
 
         else if (strcmp(operation, "copystr") == 0){
-            dashfile();
-            copystr(); //allright
+            copy_args();
         }
 
         else if (strcmp(operation, "pastestr") == 0){
@@ -1694,8 +1609,7 @@ int main(){
         }
 
         else if (strcmp(operation, "cutstr") == 0){
-            char * dash_file = dashfile();
-            cutstr(); //not done
+            cut_args();
         }
 
         else if (strcmp(operation, "tree") == 0){
