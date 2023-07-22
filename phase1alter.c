@@ -187,6 +187,13 @@ void undo_saver(char * path){
     fclose(open_undo);
 }
 
+void create_copy(){
+    char * path = (char *) calloc(1000, sizeof(char));
+    strcpy(path, "copy/copy.txt");
+    if(does_exist(path) == 0)
+        createfile(path);
+}
+
 void cat(){
 
     char * path = get_path();
@@ -407,6 +414,7 @@ void copystr(){
         return;
     }
 
+    create_copy();
     FILE * filepointer1 = fopen(path, "r");
     FILE * filepointer2 = fopen("copy/copy.txt", "w");
 
@@ -415,7 +423,7 @@ void copystr(){
         char c = fgetc(filepointer1);
         if (c == '\n')
             line++;
-        }
+    }
 
     if (strcmp(dashdir, "-f") == 0){
 
@@ -428,27 +436,24 @@ void copystr(){
     }
 
     else{
-
         for(int i = 0; i<start_pos; i++){
-            char pos_count = fgetc(filepointer1);
+            int pos_count = fgetc(filepointer1);
         }
 
-        int position = ftell(filepointer1);
+        int position = ftell(filepointer1) - (line -1);
         rewind(filepointer1);
 
-        for(int i = 0; i<position - size -1; i++){
-            char pos_count = fgetc(filepointer1);
+        for(int i = 0; i < position - size; i++){
+            int pos_count = fgetc(filepointer1);
         }
 
-        for(int i = 0; i<size; i++)
+        for(int i = 0; i < size; i++)
             fputc(fgetc(filepointer1), filepointer2);
     }
 
     printf("copied\n");
-
     fclose(filepointer1);
     fclose(filepointer2);
-
 }
 
 void pastestr(){
