@@ -192,6 +192,7 @@ void create_copy(){
 }
 
 void cat(){
+    dashfile();
     char * path = get_path();
     if(does_exist(path) == 0){
         printf("file does not exist\n");
@@ -525,6 +526,109 @@ void cut_args() {
     printf("done\n");
 }
 
+int find_first(char * path, char * given_str) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(100000, sizeof(char));
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+
+        if(strstr(save, given_str)){
+            return (ftell(filepointer) - strlen(save));
+            found = 1;
+            break;
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if(found == 0)
+        return -1;
+    fclose(filepointer);
+    return 0;
+}
+
+int find_byword(char * path, char * given_str) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(100000, sizeof(char));
+    int * word_num = (int *)calloc(10000, sizeof(int));
+    int word_count = 0;
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+        word_count++;
+
+        if(strstr(save, given_str)){
+            found = 1;
+            return word_count;
+            break;
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if (found == 0)
+        return -1;
+
+    fclose(filepointer);
+    return 0;
+}
+
+int * find_all(char * path, char * given_str) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int * pointer = (int *)calloc(1000, sizeof(int));
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+
+        if(strstr(save, given_str)){
+            pointer[found] = ftell(filepointer) - strlen(save);
+            found++;
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if(found == 0)
+        pointer[found] = -1;
+
+    fclose(filepointer);
+    return pointer;
+}
+
+int find_count(char * path, char * given_str) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+        if(strstr(save, given_str))
+            found++;
+    } while(fgetc(filepointer) != EOF);
+
+    fclose(filepointer);
+    return found;
+}
+
+int find_at(char * path, char * given_str, int at_num) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+        if(strstr(save, given_str)){
+            found++;
+            if(found == at_num)
+                return ftell(filepointer) - strlen(save);
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if(found < at_num){
+        fclose(filepointer);
+        return -1;
+    }
+}
+
 int find2(char string[], char path[], int num){
 
     if(num == 0){
@@ -722,123 +826,36 @@ int find1(char given_str[], char * path, int num){
         }
     }
 
-    if (num == 0){
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(100000, sizeof(char));
-        int found = 0;
+    if (num == 0)
+        printf("%d\n", find_first(path, given_str));
 
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(strstr(save, given_str)){
-                return (ftell(filepointer) - strlen(save));
-                found = 1;
-                break;
-            }
-        }
-
-        if(found == 0){
-            return -1;
-        }
-
-        fclose(filepointer);
-    }
-
-    else if(num == 1){
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(100000, sizeof(char));
-        int * word_num = (int *)calloc(10000, sizeof(int));
-        int word_count = 0;
-        int found = 0;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-            word_count++;
-
-            if(strstr(save, given_str)){
-                found = 1;
-                printf("%d\n", word_count);
-                break;
-            }
-        }
-        if (found == 0)
-            printf("-1\n");
-
-        fclose(filepointer);
-    }
+    else if(num == 1)
+        printf("%d\n", find_byword(path, given_str));
 
     else if (num == 2){
-        FILE * filepointer = fopen(path, "r");
-
-        char * save = (char *)calloc(1000, sizeof(char));
-        int * pointer = (int *)calloc(1000, sizeof(int));
-        int found = 0;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(strstr(save, given_str)){
-                pointer[found] = ftell(filepointer) - strlen(save);
-                found++;
-            }
-        }
-
-        if(found == 0){
+        int* array;
+        array = find_all(path, given_str);
+        if(array[0] == -1)
             printf("-1\n");
-        }
-
         else{
-            for(int i = 0; i<found; i++){
-                if (i == found-1)
-                    printf("%d\n", pointer[i]);
+            int size = find_count(path, given_str);
+            for(int i = 0; i < size; i++){
+                if(i == size-1)
+                    printf("%d\n", array[i]);
                 else
-                    printf("%d, ", pointer[i]);
+                    printf("%d, ", array[i]);
             }
         }
-
-        fclose(filepointer);
+        free(array);
     }
 
-    else if (num == 3){
-        FILE * filepointer = fopen(path, "r");
-
-        char * save = (char *)calloc(1000, sizeof(char));
-        int found = 0;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(strstr(save, given_str))
-                found++;
-        }
-        fclose(filepointer);
-        printf("%d\n", found);
-    }
+    else if (num == 3)
+        printf("%d\n", find_count(path, given_str));
 
     else if (num == 4){
         int at_num;
         scanf("%d", &at_num);
-
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(1000, sizeof(char));
-        int found = 0;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(strstr(save, given_str)){
-                found++;
-                if(found == at_num){
-                    return ftell(filepointer) - strlen(save);
-                    break;
-                }
-            }
-        }
-
-        if(found < at_num){
-            return -1;
-        }
-        fclose(filepointer);
+        printf("%d\n", find_at(path, given_str, at_num));
     }
 
     else if(num == 5){
@@ -895,6 +912,33 @@ int find1(char given_str[], char * path, int num){
             printf("-1\n");
         fclose(filepointer);
     }
+}
+
+void find_args() {
+    char * dash_str = dashstr();
+    char * given_str = get_string();
+    char * dash_file = dashfile();
+    char * path = get_path();
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
+    char function[10];
+    scanf("%s", function);
+    int num;
+
+    if(strcmp(function, "-f") == 0) num = 0;
+    else if(strcmp(function, "-byword") == 0) num = 1;
+    else if(strcmp(function, "-all") == 0) num = 2;
+    else if(strcmp(function, "-count") == 0) num = 3;
+    else if(strcmp(function, "-at") == 0) num = 4;
+    else if(strcmp(function, "-all-byword") == 0 || strcmp(function, "-byword-all") == 0) num = 5;
+    else if(strcmp(function, "-byword-at") == 0) num = 6;
+    else{
+        printf("invalid argument\n");
+        return;
+    }
+    find1(given_str, path, num);
 }
 
 void replace2(char string1[], char string2[], char path[], int num){
@@ -1538,30 +1582,23 @@ int main(){
                 printf("file created successfully\n");
         }
 
-        else if (strcmp(operation, "cat") == 0){
-            char * dash_file = dashfile();;
-            cat(); //allright
-        }
+        else if (strcmp(operation, "cat") == 0)
+            cat();
 
-        else if (strcmp(operation, "insertstr") == 0){
+        else if (strcmp(operation, "insertstr") == 0)
             insert_args();
-        }
 
-        else if (strcmp(operation, "removestr") == 0){
+        else if (strcmp(operation, "removestr") == 0)
             remove_args();
-        }
 
-        else if (strcmp(operation, "copystr") == 0){
+        else if (strcmp(operation, "copystr") == 0)
             copy_args();
-        }
 
-        else if (strcmp(operation, "pastestr") == 0){
+        else if (strcmp(operation, "pastestr") == 0)
             paste_args();
-        }
 
-        else if (strcmp(operation, "cutstr") == 0){
+        else if (strcmp(operation, "cutstr") == 0)
             cut_args();
-        }
 
         else if (strcmp(operation, "tree") == 0){
             int num, depth;
@@ -1577,48 +1614,8 @@ int main(){
             print_tree("root/", 0, depth); //complete
         }
 
-        else if(strcmp (operation, "find") == 0){
-            char * dash_str = dashstr();
-            char * given_str = get_string();
-            char * dash_file = dashfile();
-            char * path = get_path();
-            if(does_exist(path) == 0){
-                printf("file does not exist\n");
-                continue;
-            }
-            char function[10];
-            scanf("%s", function);
-            int num;
-
-            if(strcmp(function, "-f") == 0){
-                num = 0;
-                printf("%d\n", find1(given_str, path, num));
-            }
-            else if(strcmp(function, "-byword") == 0){
-                num = 1;
-                find1(given_str, path, num);
-            }
-            else if(strcmp(function, "-all") == 0){
-                num = 2;
-                find1(given_str, path, num);
-            }
-            else if(strcmp(function, "-count") == 0){
-                num = 3;
-                find1(given_str, path, num);
-            }
-            else if(strcmp(function, "-at") == 0){
-                num = 4;
-                printf("%d\n", find1(given_str, path, num));
-            }
-            else if(strcmp(function, "-all-byword") == 0 || strcmp(function, "-byword-all") == 0){
-                num = 5;
-                find1(given_str, path, num);
-            }
-            else if(strcmp(function, "-byword-at") == 0){
-                num = 6;
-                find1(given_str, path, num);
-            }
-        }
+        else if(strcmp (operation, "find") == 0)
+            find_args();
 
         else if(strcmp (operation, "replace") == 0){
             char * dash_str1 = dashstr();
