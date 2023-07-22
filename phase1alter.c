@@ -192,7 +192,6 @@ void create_copy(){
 }
 
 void cat(){
-
     char * path = get_path();
     if(does_exist(path) == 0){
         printf("file does not exist\n");
@@ -211,11 +210,6 @@ void cat(){
 }
 
 void insert(char * path, char * to_insert, int line_num, int start_pos){
-    if(does_exist(path) == 0){
-        printf("file does not exist\n");
-        return;
-    }
-
     undo_saver(path);
 
     char * copy = (char *)calloc(100000, sizeof(char));
@@ -282,8 +276,6 @@ void insert(char * path, char * to_insert, int line_num, int start_pos){
             break;
         fputc(copy[i+n+start_pos+1], filepointer2);
     }
-
-    printf("done\n");
     fclose(filepointer2);
 }
 
@@ -296,15 +288,15 @@ void insert_args() {
     scanf("%s", dashpos);
     int line_num, start_pos;
     scanf("%d:%d", &line_num, &start_pos);
-    insert(path, to_insert, line_num, start_pos);
-}
-
-void removestr(char * path, int line_num, int start_pos, int size, char * direction){
     if(does_exist(path) == 0){
         printf("file does not exist\n");
         return;
     }
+    insert(path, to_insert, line_num, start_pos);
+    printf("done\n");
+}
 
+void removestr(char * path, int line_num, int start_pos, int size, char * direction){
     undo_saver(path);
 
     char * copy = (char *)malloc(100000 * sizeof(char));
@@ -369,7 +361,6 @@ void removestr(char * path, int line_num, int start_pos, int size, char * direct
     }
 
     fclose(filepointer2);
-    printf("success\n");
 }
 
 void remove_args() {
@@ -391,15 +382,15 @@ void remove_args() {
     char dashdir[5];
     scanf("%s", dashdir);
 
-    removestr(path, line_num, start_pos, size, dashdir);
-}
-
-void copystr(char * path, int line_num, int start_pos, int size, char * direction){
     if(does_exist(path) == 0){
         printf("file does not exist\n");
         return;
     }
+    removestr(path, line_num, start_pos, size, dashdir);
+    printf("done\n");
+}
 
+void copystr(char * path, int line_num, int start_pos, int size, char * direction){
     create_copy();
     FILE * filepointer1 = fopen(path, "r");
     FILE * filepointer2 = fopen("copy/copy.txt", "w");
@@ -436,8 +427,6 @@ void copystr(char * path, int line_num, int start_pos, int size, char * directio
         for(int i = 0; i < size; i++)
             fputc(fgetc(filepointer1), filepointer2);
     }
-
-    printf("copied\n");
     fclose(filepointer1);
     fclose(filepointer2);
 }
@@ -461,15 +450,15 @@ void copy_args() {
     char dashdir[5];
     scanf("%s", dashdir);
 
-    copystr(path, line_num, start_pos, size, dashdir);
-}
-
-void pastestr(char * path, int line_num, int start_pos){
     if(does_exist(path) == 0){
         printf("file does not exist\n");
         return;
     }
+    copystr(path, line_num, start_pos, size, dashdir);
+    printf("copied\n");
+}
 
+void pastestr(char * path, int line_num, int start_pos){
     FILE * filepointer = fopen("copy/copy.txt", "r");
 
     char * string = (char *)calloc(1000000, sizeof(char));
@@ -484,7 +473,6 @@ void pastestr(char * path, int line_num, int start_pos){
     fclose(filepointer);
 
     insert(path, string, line_num, start_pos);
-    printf("done\n");
 }
 
 void paste_args() {
@@ -497,7 +485,12 @@ void paste_args() {
     int line_num, start_pos;
     scanf("%d:%d", &line_num, &start_pos);
 
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
     pastestr(path, line_num, start_pos);
+    printf("done\n");
 }
 
 void cutstr(char * path, int line_num, int start_pos, int size, char * direction){
@@ -524,7 +517,12 @@ void cut_args() {
     char dashdir[5];
     scanf("%s", dashdir);
 
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
     cutstr(path, line_num, start_pos, size, dashdir);
+    printf("done\n");
 }
 
 int find2(char string[], char path[], int num){
