@@ -311,6 +311,11 @@ void removestr(){
     char dashdir[5];
     scanf("%s", dashdir);
 
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
+
     undo_saver(path);
 
     char * copy = (char *)malloc(100000 * sizeof(char));
@@ -331,17 +336,15 @@ void removestr(){
     FILE * filepointer2 = fopen(path, "w");
 
     if(strcmp(dashdir, "-f") == 0){
+        int n = -1, line = 1;
+        for(int i = 0; ; i++){
+            if(line == line_num){
+                n = i;
+                break;
+            }
 
-        int n = 0, line = 1;
-
-    for(int i = 0; ; i++){
-        if(line == line_num){
-            n = i;
-            break;
-        }
-
-        if(copy[i] == '\n')
-            line++;
+            if(copy[i] == '\n')
+                line++;
     }
 
         for(int i = 0; i < n+start_pos; i++)
@@ -355,7 +358,6 @@ void removestr(){
     }
 
     else{
-
         int line = 1, n = 0;
 
         for(int i = 0; ; i++){
@@ -378,7 +380,6 @@ void removestr(){
     }
 
     fclose(filepointer2);
-
     printf("success\n");
 }
 
