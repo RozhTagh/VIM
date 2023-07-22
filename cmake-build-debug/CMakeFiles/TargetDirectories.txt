@@ -1,0 +1,3 @@
+C:/Users/ASUS/Desktop/Uni/fop project/cmake-build-debug/CMakeFiles/fop_project.dir
+C:/Users/ASUS/Desktop/Uni/fop project/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/ASUS/Desktop/Uni/fop project/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,6 @@
+hello bye hello world
+he said "hello you"; just this.
+hello \r rozhin
+bye it's bye hello me
+hello \n hello rozhin
+hello "fuck off" bye

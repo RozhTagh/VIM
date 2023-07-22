@@ -1,0 +1,4 @@
+createfile complete
+cat complete
+insert complete
+invalid command not complete
