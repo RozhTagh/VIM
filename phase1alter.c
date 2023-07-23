@@ -36,12 +36,10 @@ char * get_path(){
                 break;
         }
     }
-
     return path;
 }
 
 char * get_string(){
-
     char * string = (char *)calloc(100000, sizeof(char));
     char c;
     scanf("%c", &c);
@@ -526,6 +524,21 @@ void cut_args() {
     printf("done\n");
 }
 
+char * handle_star(char * given_str) {
+    int length = strlen(given_str);
+
+    for(int i = 1; i<length; i++){
+        if (given_str[i-1] == 92 && given_str[i] == 42){
+            given_str[i-1] = '*';
+            for(int j = i; j<length-1; j++){
+                given_str[j] = given_str[j+1];
+            }
+            given_str[length-1] = NULL;
+        }
+    }
+    return given_str;
+}
+
 int find_first(char * path, char * given_str) {
     FILE * filepointer = fopen(path, "r");
     char * save = (char *)calloc(100000, sizeof(char));
@@ -624,6 +637,55 @@ int find_at(char * path, char * given_str, int at_num) {
     } while(fgetc(filepointer) != EOF);
 
     if(found < at_num){
+        fclose(filepointer);
+        return -1;
+    }
+}
+
+int * find_all_byword(char * path, char * given_str) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(100000, sizeof(char));
+    int * word_num = (int *)calloc(10000, sizeof(int));
+    int word_count = 0;
+    int found = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+        word_count++;
+
+        if(strstr(save, given_str)){
+            word_num[found] = word_count;
+            found++;
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if(found == 0)
+        word_num[found] = -1;
+
+    fclose(filepointer);
+    return word_num;
+}
+
+int find_byword_at (char * path, char * given_str, int at_num) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int found = 0;
+    int word_count = 0;
+
+    do {
+        fscanf(filepointer, "%s", save);
+        word_count++;
+
+        if(strstr(save, given_str)){
+            found++;
+            if(found == at_num){
+                fclose(filepointer);
+                return word_count;
+            }
+        }
+    } while(fgetc(filepointer) != EOF);
+
+    if(found < at_num) {
         fclose(filepointer);
         return -1;
     }
@@ -802,29 +864,16 @@ int find2(char string[], char path[], int num){
     }
 }
 
-int find1(char given_str[], char * path, int num){
+void find1(char given_str[], char * path, int num){
 
     for(int i = 1; i<strlen(given_str); i++){
         if((given_str[i] == 42 && given_str[i-1] != 92) || given_str[0] == 42){
             find2(given_str, path, num);
-            return 0;
         }
     }
 
-    if(strstr(given_str, "\*")){
-
-        int length = strlen(given_str);
-
-        for(int i = 1; i<length; i++){
-            if (given_str[i-1] == 92 && given_str[i] == 42){
-                given_str[i-1] = '*';
-                for(int j = i; j<length-1; j++){
-                    given_str[j] = given_str[j+1];
-                }
-                given_str[length-1] = NULL;
-            }
-        }
-    }
+    if(strstr(given_str, "\*"))
+        given_str = handle_star(given_str);
 
     if (num == 0)
         printf("%d\n", find_first(path, given_str));
@@ -840,13 +889,10 @@ int find1(char given_str[], char * path, int num){
         else{
             int size = find_count(path, given_str);
             for(int i = 0; i < size; i++){
-                if(i == size-1)
-                    printf("%d\n", array[i]);
-                else
-                    printf("%d, ", array[i]);
+                printf("%d ", array[i]);
             }
+            printf("\n");
         }
-        free(array);
     }
 
     else if (num == 3)
@@ -859,58 +905,24 @@ int find1(char given_str[], char * path, int num){
     }
 
     else if(num == 5){
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(100000, sizeof(char));
-        int * word_num = (int *)calloc(10000, sizeof(int));
-        int word_count = 0;
-        int found = 0;
+        int * array;
+        array = find_all_byword(path, given_str);
 
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-            word_count++;
-
-            if(strstr(save, given_str)){
-                word_num[found] = word_count;
-                found++;
+        if(array[0] == -1)
+            printf("-1\n");
+        else{
+            int size = find_count(path, given_str);
+            for(int i = 0; i < size; i++){
+                printf("%d ", array[i]);
             }
-        }
-
-        fclose(filepointer);
-
-        for(int i = 0; i<found; i++){
-            if(i == found-1){
-                printf("%d\n", word_num[i]);
-                break;
-            }
-            printf("%d, ", word_num[i]);
+            printf("\n");
         }
     }
 
     else if (num == 6){
         int at_num;
         scanf("%d", &at_num);
-
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(1000, sizeof(char));
-        int found = 0;
-        int word_count = 0;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-            word_count++;
-
-            if(strstr(save, given_str)){
-                found++;
-                if(found == at_num){
-                    printf("%d\n", word_count);
-                    break;
-                }
-            }
-        }
-
-        if(found < at_num)
-            printf("-1\n");
-        fclose(filepointer);
+        printf("%d\n", find_byword_at(path, given_str, at_num));
     }
 }
 
@@ -919,11 +931,12 @@ void find_args() {
     char * given_str = get_string();
     char * dash_file = dashfile();
     char * path = get_path();
-    if(does_exist(path) == 0){
+    if(does_exist(path) == 0) {
         printf("file does not exist\n");
         return;
     }
-    char function[10];
+
+    char function[15];
     scanf("%s", function);
     int num;
 
@@ -1056,7 +1069,8 @@ void replace1(char string1[], char string2[], char * path, int num){
 
     if(num == 0){
 
-        int position = find1(string1, path, 0);
+        //int position = find1(string1, path, 0);
+        int position = 0;
 
         if(position == -1){
             printf("str1 not found\n");
@@ -1081,7 +1095,8 @@ void replace1(char string1[], char string2[], char * path, int num){
 
     else if(num == 1){
 
-        int position = find1(string1, path, 4);
+        //int position = find1(string1, path, 4);
+        int position = 0;
 
         if(position == -1){
             printf("str1 not found\n");
