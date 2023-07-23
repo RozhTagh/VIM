@@ -903,9 +903,8 @@ int find_wildcard(char string[], char path[], int num){
 void find(char given_str[], char * path, int num){
 
     for(int i = 1; i<strlen(given_str); i++){
-        if((given_str[i] == 42 && given_str[i-1] != 92) || given_str[0] == 42){
+        if((given_str[i] == 42 && given_str[i-1] != 92) || given_str[0] == 42)
             find_wildcard(given_str, path, num);
-        }
     }
 
     if(strstr(given_str, "\*"))
@@ -1239,30 +1238,25 @@ void print_tree(char * basepath, int round, int max){
 }
 
 void print_grep(char * path, char grep_text[]){
-
     FILE * filepointer = fopen(path, "r");
-    char line[1000] = {NULL};
+    char line[1000] = {""};
 
     while(1){
         fscanf(filepointer, "%[^\n]s", line);
         char character = fgetc(filepointer);
 
-        if (strstr(line, grep_text) != 0){
+        if (strstr(line, grep_text) != 0)
             printf("%s: %s\n", path, line);
-        }
 
         if (character == EOF)
             break;
     }
-
     fclose(filepointer);
-
 }
 
 void print_grep_c(char * path, char grep_text[], int * is_found){
-
     FILE * filepointer = fopen(path, "r");
-    char line[1000] = {NULL};
+    char line[1000] = {""};
 
     while(1){
         fscanf(filepointer, "%[^\n]s", line);
@@ -1274,14 +1268,12 @@ void print_grep_c(char * path, char grep_text[], int * is_found){
         if (character == EOF)
             break;
     }
-
     fclose(filepointer);
 }
 
 void print_grep_l(char * path, char grep_text[]){
-
     FILE * filepointer = fopen(path, "r");
-    char line[1000] = {NULL};
+    char line[1000] = {""};
 
     while(1){
         fscanf(filepointer, "%[^\n]s", line);
@@ -1289,36 +1281,88 @@ void print_grep_l(char * path, char grep_text[]){
 
         if (strstr(line, grep_text) != 0){
             printf("%s\n", path);
+            fclose(filepointer);
             break;
         }
-
         if (character == EOF)
             break;
     }
-
     fclose(filepointer);
+}
 
+char * process_grep_text(char * grep_text){
+    for (int i = 0; i<1000; i++){
+        if (grep_text[i+1] != 34)
+            grep_text[i] = grep_text[i+1];
+        else{
+            grep_text[i] = NULL;
+            grep_text[i+1] = NULL;
+            break;
+        }
+    }
+    return grep_text;
+}
+
+void grep_c() {
+    char dashstr[10];
+    scanf("%s", dashstr);
+
+    char * grep_text = (char *) calloc(1000, sizeof(char));
+    scanf("%s", grep_text);
+
+    grep_text = process_grep_text(grep_text);
+
+    char dashfile[10];
+    scanf("%s", dashfile);
+
+    char address[1000];
+    scanf("%[^\n]s", address);
+
+    int is_found = 0;
+
+    char* token = strtok(address, " ");
+
+    while (token != NULL) {
+        print_grep_c(token, grep_text, &is_found);
+        token = strtok(NULL, " ");
+    }
+
+    printf("%d\n", is_found);
+}
+
+void grep_l() {
+    char dashstr[10];
+    scanf("%s", dashstr);
+
+    char * grep_text = (char *) calloc(1000, sizeof(char));
+    scanf("%s", grep_text);
+
+    grep_text = process_grep_text(grep_text);
+
+    char dashfile[10];
+    scanf("%s", dashfile);
+
+    char address[1000];
+    scanf("%[^\n]s", address);
+
+    char* token = strtok(address, " ");
+
+    while (token != NULL) {
+        print_grep_l(token, grep_text);
+        token = strtok(NULL, " ");
+    }
 }
 
 void grep(){
-
     char unknown[7];
     scanf("%s", unknown);
 
     if (strcmp(unknown, "--str") == 0){
 
-        char grep_text[1000];
+        char * grep_text = (char *) calloc(1000, sizeof(char));
         scanf("%s", grep_text);
 
-        for (int i = 0; i<1000; i++){
-            if (grep_text[i+1] != 34)
-                grep_text[i] = grep_text[i+1];
-            else{
-                grep_text[i] = NULL;
-                grep_text[i+1] = NULL;
-                break;
-            }
-        }
+        grep_text = process_grep_text(grep_text);
 
         char dashfile[10];
         scanf("%s", dashfile);
@@ -1334,71 +1378,11 @@ void grep(){
         }
     }
 
-    else if(strcmp(unknown, "-c") == 0){
-        char dashstr[10];
-        scanf("%s", dashstr);
+    else if(strcmp(unknown, "-c") == 0)
+        grep_c();
 
-        char grep_text[1000];
-        scanf("%s", grep_text);
-
-        for (int i = 0; i<1000; i++){
-            if (grep_text[i+1] != 34)
-                grep_text[i] = grep_text[i+1];
-            else{
-                grep_text[i] = NULL;
-                grep_text[i+1] = NULL;
-                break;
-            }
-        }
-
-        char dashfile[10];
-        scanf("%s", dashfile);
-
-        char address[1000];
-        scanf("%[^\n]s", address);
-
-        int is_found = 0;
-
-        char* token = strtok(address, " ");
-
-        while (token != NULL) {
-            print_grep_c(token, grep_text, &is_found);
-            token = strtok(NULL, " ");
-        }
-
-        printf("%d\n", is_found);
-    }
-
-    else if(strcmp(unknown, "-l") == 0){
-        char dashstr[10];
-        scanf("%s", dashstr);
-
-        char grep_text[1000];
-        scanf("%s", grep_text);
-
-        for (int i = 0; i<1000; i++){
-            if (grep_text[i+1] != 34)
-                grep_text[i] = grep_text[i+1];
-            else{
-                grep_text[i] = NULL;
-                grep_text[i+1] = NULL;
-                break;
-            }
-        }
-
-        char dashfile[10];
-        scanf("%s", dashfile);
-
-        char address[1000];
-        scanf("%[^\n]s", address);
-
-        char* token = strtok(address, " ");
-
-        while (token != NULL) {
-            print_grep_l(token, grep_text);
-            token = strtok(NULL, " ");
-        }
-    }
+    else if(strcmp(unknown, "-l") == 0)
+        grep_l();
 }
 
 void compare(){
