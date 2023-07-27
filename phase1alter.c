@@ -989,6 +989,62 @@ void find_args() {
     find(given_str, path, num);
 }
 
+void replace_first(char * path, char * string1, char * string2, char * copy) {
+    int position = find_first(path, string1);
+
+    if(position == -1){
+        printf("str1 not found\n");
+        return;
+    }
+
+    FILE * filepointer = fopen(path, "w");
+
+    int i = 0;
+    while (ftell(filepointer) != position) {
+        fputc(copy[i], filepointer);
+        i++;
+    }
+
+    fprintf(filepointer, "%s", string2);
+
+    for(int j = i + strlen(string1); ;j++){
+        if(copy[j] == EOF)
+            break;
+        fputc(copy[j], filepointer);
+    }
+
+    fclose(filepointer);
+    printf("done\n");
+}
+
+void replace_at(char * path, char * string1, char * string2, char * copy, int at_num) {
+    int position = find_at(path, string1, at_num);
+
+    if(position == -1){
+        printf("str1 not found\n");
+        return;
+    }
+
+    FILE * filepointer = fopen(path, "w");
+
+    int i = 0;
+    while (ftell(filepointer) != position) {
+        fputc(copy[i], filepointer);
+        i++;
+    }
+
+    fprintf(filepointer, "%s", string2);
+
+    for(int j = i + strlen(string1); ;j++){
+        if(copy[j] == EOF)
+            break;
+        fputc(copy[j], filepointer);
+    }
+
+    fclose(filepointer);
+    printf("done\n");
+}
+
 void replace2(char string1[], char string2[], char path[], int num){
 
     FILE * filepointer = fopen(path, "r");
@@ -1082,8 +1138,7 @@ void replace2(char string1[], char string2[], char path[], int num){
     }
 }
 
-void replace1(char string1[], char string2[], char * path, int num){
-
+void replace(char string1[], char string2[], char * path, int num){
     undo_saver(path);
 
     for(int i = 1; i<strlen(string1); i++){
@@ -1102,56 +1157,13 @@ void replace1(char string1[], char string2[], char * path, int num){
     }
     fclose(filepointer);
 
-    if(num == 0){
-
-        //int position = find(string1, path, 0);
-        int position = 0;
-
-        if(position == -1){
-            printf("str1 not found\n");
-            return;
-        }
-
-        FILE * filepointer2 = fopen(path, "w");
-
-        for(int i = 0; i < position; i++)
-            fputc(copy[i], filepointer2);
-
-        fprintf(filepointer2, "%s", string2);
-
-        for(int i = position + strlen(string1); ;i++){
-            if(copy[i] == EOF)
-                break;
-            fputc(copy[i], filepointer2);
-        }
-        fclose(filepointer2);
-        printf("done\n");
-    }
+    if(num == 0)
+        replace_first(path, string1, string2, copy);
 
     else if(num == 1){
-
-        //int position = find(string1, path, 4);
-        int position = 0;
-
-        if(position == -1){
-            printf("str1 not found\n");
-            return;
-        }
-
-        FILE * filepointer2 = fopen(path, "w");
-
-        for(int i = 0; i < position - 1; i++)
-            fputc(copy[i], filepointer2);
-
-        fprintf(filepointer2, "%s", string2);
-
-        for(int i = position + strlen(string1)-1; ;i++){
-            if(copy[i] == EOF)
-                break;
-            fputc(copy[i], filepointer2);
-        }
-        fclose(filepointer2);
-        printf("done\n");
+        int at_num;
+        scanf("%d", &at_num);
+        replace_at(path, string1, string2, copy, at_num);
     }
 
     else if(num == 2){
@@ -1197,6 +1209,30 @@ void replace1(char string1[], char string2[], char * path, int num){
         fclose(filepointer3);
         printf("done\n");
     }
+}
+
+void replace_args() {
+    char * dash_str1 = dashstr();
+    char * str1 = get_string();
+    char * dash_str2 = dashstr();
+    char * str2 = get_string();
+    char * dash_file = dashfile();
+    char * path = get_path();
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
+    char function[15];
+    scanf("%s", function);
+    int num;
+    if(strcmp(function, "-r") == 0) num = 0;
+    else if(strcmp(function, "-at") == 0) num = 1;
+    else if(strcmp(function, "-all") == 0) num = 2;
+    else {
+        printf("invalid argument!\n");
+        return;
+    }
+    replace(str1, str2, path, num);
 }
 
 void print_tree(char * basepath, int round, int max){
@@ -1365,7 +1401,7 @@ void grep(){
         grep_text = process_grep_text(grep_text);
 
         char dashfile[10];
-        scanf("%s", dashfile);
+        scanf("%s ", dashfile);
 
         char address[1000];
         scanf("%[^\n]s", address);
@@ -1505,6 +1541,7 @@ void compare(){
 }
 
 void indent(char * path){
+    undo_saver(path);
 
     char * copy = (char *)calloc(100000, sizeof(char));
     FILE * filepointer = fopen(path, "r");
@@ -1527,8 +1564,6 @@ void indent(char * path){
         else
             i++;
     }
-
-    //printf("%s\n", copy);
 
     fclose(filepointer);
 
@@ -1576,7 +1611,6 @@ void indent(char * path){
 }
 
 void undo(char * path){
-
     char * path2 = (char *)calloc(100000, sizeof(char));
 
     strcpy(path2, "undo/");
@@ -1652,28 +1686,8 @@ int main(){
         else if(strcmp (operation, "find") == 0)
             find_args();
 
-        else if(strcmp (operation, "replace") == 0){
-            char * dash_str1 = dashstr();
-            char * str1 = get_string();
-            char * dash_str2 = dashstr();
-            char * str2 = get_string();
-            char * dash_file = dashfile();
-            char * path = get_path();
-            if(does_exist(path) == 0){
-                printf("file does not exist\n");
-                continue;
-            }
-            char function[10];
-            scanf("%s", function);
-            int num;
-            if(strcmp(function, "-r") == 0)
-                num = 0;
-            else if(strcmp(function, "-at") == 0)
-                num = 1;
-            else if(strcmp(function, "-all") == 0)
-                num = 2;
-            replace1(str1, str2, path, num);
-        }
+        else if(strcmp (operation, "replace") == 0)
+            replace_args();
 
         else if(strcmp (operation, "grep") == 0){
             grep(); //complete
