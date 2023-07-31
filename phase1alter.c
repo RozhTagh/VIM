@@ -700,9 +700,10 @@ int find_first_wildcard(char * path, char * string) {
         fscanf(filepointer, "%s", save);
 
         if(match(string, save) == 1){
+            int result = ftell(filepointer) - strlen(save);
             fclose(filepointer);
             found = 1;
-            return ftell(filepointer) - strlen(save);
+            return result;
         }
     } while(fgetc(filepointer) != EOF);
 
@@ -903,8 +904,10 @@ int find_wildcard(char string[], char path[], int num){
 void find(char given_str[], char * path, int num){
 
     for(int i = 1; i<strlen(given_str); i++){
-        if((given_str[i] == 42 && given_str[i-1] != 92) || given_str[0] == 42)
+        if((given_str[i] == 42 && given_str[i-1] != 92) || given_str[0] == 42) {
             find_wildcard(given_str, path, num);
+            return;
+        }
     }
 
     if(strstr(given_str, "\*"))
@@ -1043,6 +1046,90 @@ void replace_at(char * path, char * string1, char * string2, char * copy, int at
     printf("done\n");
 }
 
+int replace_first_wildcard (char * path, char * string1, char * string2, char * copy) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int found = 0;
+    int position, size;
+
+    do {
+        fscanf(filepointer, "%s", save);
+
+        if(match(string1, save) == 1){
+            position = (ftell(filepointer) - strlen(save));
+            size = strlen(save);
+            found = 1;
+            break;
+        }
+    } while(fgetc(filepointer) != EOF);
+    fclose(filepointer);
+
+    if(found == 0)
+        return 0;
+
+    FILE * filepointer2 = fopen(path, "w");
+
+    int i = 0;
+    while (ftell(filepointer2) != position) {
+        fputc(copy[i], filepointer2);
+        i++;
+    }
+
+    fprintf(filepointer2, "%s", string2);
+
+    for(int j = i + size; ;j++){
+        if(copy[j] == EOF)
+            break;
+        fputc(copy[j], filepointer2);
+    }
+    fclose(filepointer2);
+    return 1;
+}
+
+void replace_at_wildcard (char * path, char * string1, char * string2, char * copy, int at_num) {
+    FILE * filepointer = fopen(path, "r");
+    char * save = (char *)calloc(1000, sizeof(char));
+    int found = 0;
+    int position, size;
+
+    do {
+        fscanf(filepointer, "%s", save);
+
+        if(match(string1, save) == 1)
+            found++;
+
+        if(found == at_num){
+            position = ftell(filepointer) - strlen(save);
+            size = strlen(save);
+            break;
+        }
+    } while(fgetc(filepointer) != EOF);
+    fclose(filepointer);
+
+    if(found < at_num){
+        printf("str1 not found\n");
+        return;
+    }
+
+    FILE * filepointer2 = fopen(path, "w");
+
+    int i = 0;
+    while (ftell(filepointer2) != position) {
+        fputc(copy[i], filepointer2);
+        i++;
+    }
+
+    fprintf(filepointer2, "%s", string2);
+
+    for(int j = i + size; ;j++){
+        if(copy[j] == EOF)
+            break;
+        fputc(copy[j], filepointer2);
+    }
+    fclose(filepointer2);
+    printf("done\n");
+}
+
 char * get_copy(char * path) {
     FILE * filepointer = fopen(path, "r");
     char * copy = (char *)calloc(100000, sizeof(char));
@@ -1055,96 +1142,32 @@ char * get_copy(char * path) {
     return copy;
 }
 
-void replace2(char string1[], char string2[], char path[], int num){
-
-    FILE * filepointer = fopen(path, "r");
+void replace_wildcard(char string1[], char string2[], char path[], int num){
     char * copy = (char *)calloc(100000, sizeof(char));
-    for(int i = 0; ; i++){
-        copy[i] = fgetc(filepointer);
-        if(copy[i] == EOF)
-            break;
-    }
-    fclose(filepointer);
+    copy = get_copy(path);
 
     if(num == 0){
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(1000, sizeof(char));
-        int found = 0;
-        int position, size;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(match(string1, save) == 1){
-                position = (ftell(filepointer) - strlen(save));
-                size = strlen(save);
-                found = 1;
-                break;
-            }
-        }
-
-        if(found == 0){
+        int result = replace_first_wildcard(path, string1, string2, copy);
+        if(result == 1)
+            printf("done\n");
+        else
             printf("str1 not found\n");
-            return;
-        }
-        fclose(filepointer);
-
-        FILE * filepointer2 = fopen(path, "w");
-
-        for(int i = 0; i < position; i++)
-            fputc(copy[i], filepointer2);
-
-        fprintf(filepointer2, "%s", string2);
-
-        for(int i = position + size; ;i++){
-            if(copy[i] == EOF)
-                break;
-            fputc(copy[i], filepointer2);
-        }
-        fclose(filepointer2);
-        printf("done\n");
     }
 
     else if(num == 1){
         int at_num;
         scanf("%d", &at_num);
+        replace_at_wildcard(path, string1, string2, copy, at_num);
+    }
 
-        FILE * filepointer = fopen(path, "r");
-        char * save = (char *)calloc(1000, sizeof(char));
-        int found = 0;
-        int position, size;
-
-        while(fgetc(filepointer) != EOF){
-            fscanf(filepointer, "%s", save);
-
-            if(match(string1, save) == 1)
-                found++;
-
-            if(found == at_num){
-                position = ftell(filepointer) - strlen(save);
-                size = strlen(save);
-                break;
-            }
+    else if (num == 2) {
+        int count = find_count_wildcard(path, string1);
+        for(int i = 1; i <= count; i++) {
+            replace_first_wildcard(path, string1, string2, copy);
+            copy = get_copy(path);
         }
-        if(found < at_num){
-            printf("str1 not found\n");
-            return;
-        }
-        fclose(filepointer);
-
-        FILE * filepointer2 = fopen(path, "w");
-
-        for(int i = 0; i <= position; i++)
-            fputc(copy[i], filepointer2);
-        fprintf(filepointer2, "%s", string2);
-
-        for(int i = position + size +1; ;i++){
-            if(copy[i] == EOF)
-                break;
-            fputc(copy[i], filepointer2);
-        }
-        fclose(filepointer2);
-        printf("done\n");
+        if(count > 0)
+            printf("done\n");
     }
 }
 
@@ -1153,7 +1176,7 @@ void replace(char string1[], char string2[], char * path, int num){
 
     for(int i = 1; i<strlen(string1); i++){
         if((string1[i] == 42 && string1[i-1] != 92) || string1[0] == 42){
-            replace2(string1, string2, path, num);
+            replace_wildcard(string1, string2, path, num);
             return;
         }
     }
