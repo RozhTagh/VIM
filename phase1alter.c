@@ -1271,6 +1271,20 @@ void print_tree(char * basepath, int round, int max){
     closedir(directory);
 }
 
+void tree_args() {
+    int num, depth;
+    scanf("%d", &num);
+    if (num == -1)
+        depth = 30;
+    else if(num < -1){
+        printf("invalid depth\n");
+        return;
+    }
+    else
+        depth = num;
+    print_tree("root/", 0, depth);
+}
+
 void print_grep(char * path, char grep_text[]){
     FILE * filepointer = fopen(path, "r");
     char line[1000] = {""};
@@ -1610,6 +1624,16 @@ void indent(char * path){
     fclose(filepointer2);
 }
 
+void indent_args() {
+    char * path = get_path();
+    if(does_exist(path) == 0){
+        printf("file does not exist\n");
+        return;
+    }
+    indent(path);
+    printf("done\n");
+}
+
 void undo(char * path){
     char * path2 = (char *)calloc(100000, sizeof(char));
 
@@ -1669,19 +1693,8 @@ int main(){
         else if (strcmp(operation, "cutstr") == 0)
             cut_args();
 
-        else if (strcmp(operation, "tree") == 0){
-            int num, depth;
-            scanf("%d", &num);
-            if (num == -1)
-                depth = 30;
-            else if(num < -1){
-                printf("invalid depth\n");
-                continue;
-            }
-            else
-                depth = num;
-            print_tree("root/", 0, depth);
-        }
+        else if (strcmp(operation, "tree") == 0)
+            tree_args();
 
         else if(strcmp (operation, "find") == 0)
             find_args();
@@ -1700,13 +1713,7 @@ int main(){
 
         else if(strcmp (operation, "auto-indent") == 0){
             scanf("%c", &space);
-            char * path = get_path();
-            if(does_exist(path) == 0){
-                printf("file does not exist\n");
-                continue;
-            }
-            indent(path);
-            printf("done\n");
+            indent_args();
         }
 
         else if(strcmp (operation, "undo") == 0){
