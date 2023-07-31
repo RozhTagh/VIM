@@ -989,13 +989,11 @@ void find_args() {
     find(given_str, path, num);
 }
 
-void replace_first(char * path, char * string1, char * string2, char * copy) {
+int replace_first(char * path, char * string1, char * string2, char * copy) {
     int position = find_first(path, string1);
 
-    if(position == -1){
-        printf("str1 not found\n");
-        return;
-    }
+    if(position == -1)
+        return 0;
 
     FILE * filepointer = fopen(path, "w");
 
@@ -1014,7 +1012,7 @@ void replace_first(char * path, char * string1, char * string2, char * copy) {
     }
 
     fclose(filepointer);
-    printf("done\n");
+    return 1;
 }
 
 void replace_at(char * path, char * string1, char * string2, char * copy, int at_num) {
@@ -1043,6 +1041,18 @@ void replace_at(char * path, char * string1, char * string2, char * copy, int at
 
     fclose(filepointer);
     printf("done\n");
+}
+
+char * get_copy(char * path) {
+    FILE * filepointer = fopen(path, "r");
+    char * copy = (char *)calloc(100000, sizeof(char));
+    for(int i = 0; ; i++){
+        copy[i] = fgetc(filepointer);
+        if(copy[i] == EOF)
+            break;
+    }
+    fclose(filepointer);
+    return copy;
 }
 
 void replace2(char string1[], char string2[], char path[], int num){
@@ -1148,17 +1158,16 @@ void replace(char string1[], char string2[], char * path, int num){
         }
     }
 
-    FILE * filepointer = fopen(path, "r");
-    char * copy = (char *)calloc(100000, sizeof(char));
-    for(int i = 0; ; i++){
-        copy[i] = fgetc(filepointer);
-        if(copy[i] == EOF)
-            break;
-    }
-    fclose(filepointer);
+    char * copy = (char *) calloc(100000, sizeof(char));
+    copy = get_copy(path);
 
-    if(num == 0)
-        replace_first(path, string1, string2, copy);
+    if(num == 0) {
+        int result = replace_first(path, string1, string2, copy);
+        if(result == 1)
+            printf("done\n");
+        else
+            printf("str1 not found\n");
+    }
 
     else if(num == 1){
         int at_num;
@@ -1167,47 +1176,13 @@ void replace(char string1[], char string2[], char * path, int num){
     }
 
     else if(num == 2){
-        FILE * filepointer2 = fopen(path, "r");
-
-        char * save = (char *)calloc(1000, sizeof(char));
-        int * pointer = (int *)calloc(1000, sizeof(int));
-        int found = 0;
-
-        while(fgetc(filepointer2) != EOF){
-            fscanf(filepointer2, "%s", save);
-
-            if(strstr(save, string1)){
-                pointer[found] = ftell(filepointer2) - strlen(save);
-                found++;
-            }
+        int count = find_count(path, string1);
+        for(int i = 1; i <= count; i++){
+            replace_first(path, string1, string2, copy);
+            copy = get_copy(path);
         }
-
-        if(found == 0){
-            printf("str1 not found\n");
-            return;
-        }
-        fclose(filepointer2);
-
-        FILE * filepointer3 = fopen(path, "w");
-        int n = 0;
-        int k = 0;
-
-        while(n < found){
-            for(int i = k; i < pointer[n]; i++)
-                fputc(copy[i], filepointer2);
-
-            fprintf(filepointer2, "%s", string2);
-
-            for(int i = pointer[n] + strlen(string1); i<pointer[n+1] ;i++){
-                k = i;
-                if(copy[i] == EOF)
-                    break;
-                fputc(copy[i], filepointer3);
-            }
-            n++;
-        }
-        fclose(filepointer3);
-        printf("done\n");
+        if(count > 0)
+            printf("done\n");
     }
 }
 
