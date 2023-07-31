@@ -1419,21 +1419,7 @@ void grep(){
         grep_l();
 }
 
-void compare(){
-
-    char * path1 = get_path();
-    char * path2 = get_path();
-
-    if(does_exist(path1) == 0){
-        printf("file1 does not exist\n");
-        return;
-    }
-
-    if(does_exist(path2) == 0){
-        printf("file2 does not exist\n");
-        return;
-    }
-
+void compare(char * path1, char * path2){
     FILE * filepointer1 = fopen(path1, "r");
     FILE * filepointer2 = fopen(path2, "r");
 
@@ -1536,6 +1522,22 @@ void compare(){
 
     fclose(filepointer1);
     fclose(filepointer2);
+}
+
+void compare_args() {
+    char * path1 = get_path();
+    char * path2 = get_path();
+
+    if(does_exist(path1) == 0){
+        printf("file1 does not exist\n");
+        return;
+    }
+
+    if(does_exist(path2) == 0){
+        printf("file2 does not exist\n");
+        return;
+    }
+    compare(path1, path2);
 }
 
 void indent(char * path){
@@ -1678,7 +1680,7 @@ int main(){
             }
             else
                 depth = num;
-            print_tree("root/", 0, depth); //complete
+            print_tree("root/", 0, depth);
         }
 
         else if(strcmp (operation, "find") == 0)
@@ -1688,12 +1690,12 @@ int main(){
             replace_args();
 
         else if(strcmp (operation, "grep") == 0){
-            grep(); //complete
+            grep();
         }
 
         else if(strcmp (operation, "compare") == 0){
             scanf("%c", &space);
-            compare(); //allright
+            compare_args();
         }
 
         else if(strcmp (operation, "auto-indent") == 0){
@@ -1703,7 +1705,7 @@ int main(){
                 printf("file does not exist\n");
                 continue;
             }
-            indent(path); //done
+            indent(path);
             printf("done\n");
         }
 
