@@ -547,7 +547,7 @@ int find_first(char * path, char * given_str) {
     do {
         fscanf(filepointer, "%s", save);
 
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             return (ftell(filepointer) - strlen(save));
             found = 1;
             break;
@@ -571,7 +571,7 @@ int find_byword(char * path, char * given_str) {
         fscanf(filepointer, "%s", save);
         word_count++;
 
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             found = 1;
             return word_count;
             break;
@@ -594,7 +594,7 @@ int * find_all(char * path, char * given_str) {
     do {
         fscanf(filepointer, "%s", save);
 
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             pointer[found] = ftell(filepointer) - strlen(save);
             found++;
         }
@@ -614,7 +614,7 @@ int find_count(char * path, char * given_str) {
 
     do {
         fscanf(filepointer, "%s", save);
-        if(strstr(save, given_str))
+        if(strcmp(save, given_str) == 0)
             found++;
     } while(fgetc(filepointer) != EOF);
 
@@ -629,7 +629,7 @@ int find_at(char * path, char * given_str, int at_num) {
 
     do {
         fscanf(filepointer, "%s", save);
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             found++;
             if(found == at_num)
                 return ftell(filepointer) - strlen(save);
@@ -653,7 +653,7 @@ int * find_all_byword(char * path, char * given_str) {
         fscanf(filepointer, "%s", save);
         word_count++;
 
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             word_num[found] = word_count;
             found++;
         }
@@ -676,7 +676,7 @@ int find_byword_at (char * path, char * given_str, int at_num) {
         fscanf(filepointer, "%s", save);
         word_count++;
 
-        if(strstr(save, given_str)){
+        if(strcmp(save, given_str) == 0){
             found++;
             if(found == at_num){
                 fclose(filepointer);
