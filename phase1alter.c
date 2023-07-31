@@ -1725,6 +1725,11 @@ int main(){
         }
 
         else{
+            char letter;
+            scanf(" %c", &letter);
+            while(letter != 10){
+                scanf("%c", &letter);
+            }
             printf("invalid command\n");
         }
     }
