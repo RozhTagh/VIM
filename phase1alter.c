@@ -1351,6 +1351,26 @@ char * process_grep_text(char * grep_text){
     return grep_text;
 }
 
+void grep() {
+    char * grep_text = (char *) calloc(1000, sizeof(char));
+    scanf("%s", grep_text);
+
+    grep_text = process_grep_text(grep_text);
+
+    char dashfile[10];
+    scanf("%s ", dashfile);
+
+    char address[1000];
+    scanf("%[^\n]s", address);
+
+    char* token = strtok(address, " ");
+
+    while (token != NULL) {
+        print_grep(token, grep_text);
+        token = strtok(NULL, " ");
+    }
+}
+
 void grep_c() {
     char dashstr[10];
     scanf("%s", dashstr);
@@ -1401,30 +1421,12 @@ void grep_l() {
     }
 }
 
-void grep(){
+void grep_args(){
     char unknown[7];
     scanf("%s", unknown);
 
-    if (strcmp(unknown, "--str") == 0){
-
-        char * grep_text = (char *) calloc(1000, sizeof(char));
-        scanf("%s", grep_text);
-
-        grep_text = process_grep_text(grep_text);
-
-        char dashfile[10];
-        scanf("%s ", dashfile);
-
-        char address[1000];
-        scanf("%[^\n]s", address);
-
-        char* token = strtok(address, " ");
-
-        while (token != NULL) {
-            print_grep(token, grep_text);
-            token = strtok(NULL, " ");
-        }
-    }
+    if (strcmp(unknown, "--str") == 0)
+        grep();
 
     else if(strcmp(unknown, "-c") == 0)
         grep_c();
@@ -1703,7 +1705,7 @@ int main(){
             replace_args();
 
         else if(strcmp (operation, "grep") == 0){
-            grep();
+            grep_args();
         }
 
         else if(strcmp (operation, "compare") == 0){
