@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 
@@ -144,7 +145,7 @@ int createfile(char * path){
         if (token != NULL){
 
             if (does_exist(path2) == 0)
-                mkdir(path2);
+                mkdir(path2, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
             strcat(path2, "/");
         }
@@ -554,10 +555,11 @@ int find_first(char * path, char * given_str) {
         }
     } while(fgetc(filepointer) != EOF);
 
+    fclose(filepointer);
     if(found == 0)
         return -1;
-    fclose(filepointer);
-    return 0;
+    else
+        return 0;
 }
 
 int find_byword(char * path, char * given_str) {
@@ -1726,7 +1728,7 @@ int main(){
 
         else{
             char letter;
-            scanf(" %c", &letter);
+            scanf("%c", &letter);
             while(letter != 10){
                 scanf("%c", &letter);
             }
